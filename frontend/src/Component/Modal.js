@@ -16,6 +16,7 @@ class CustomModal extends Component {
     super(props);
     this.state = {
       activeItem: this.props.activeItem,
+      isNewItem: this.props.activeItem.id ? false : true,
     };
   }
   handelChange = (e) => {
@@ -24,7 +25,7 @@ class CustomModal extends Component {
       value = e.target.checked;
     }
     const activeItem = { ...this.state.activeItem, [name]: value };
-    this.state({ activeItem });
+    this.setState({ activeItem });
   };
   render() {
     const { toggle, onSave, isOpen } = this.props;
@@ -41,7 +42,7 @@ class CustomModal extends Component {
                 type="text"
                 name="title"
                 value={this.state.activeItem.title}
-                onChange={this.handleChange}
+                onChange={this.handelChange}
                 placeholder="Enter Task Title"
               />
             </FormGroup>
@@ -53,7 +54,7 @@ class CustomModal extends Component {
                 type="text"
                 name="description"
                 value={this.state.activeItem.description}
-                onChange={this.handleChange}
+                onChange={this.handelChange}
                 placeholder="Enter Task Description"
               />
             </FormGroup>
@@ -65,7 +66,7 @@ class CustomModal extends Component {
                   type="checkbox"
                   name="completed"
                   checked={this.state.activeItem.completed}
-                  onChange={this.handleChange}
+                  onChange={this.handelChange}
                 />
                 Completed
               </Label>
@@ -73,7 +74,10 @@ class CustomModal extends Component {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button color="success" onClick={() => onSave(this.state.activeItem)}>
+          <Button
+            color="success"
+            onClick={() => onSave(this.state.activeItem, this.state.isNewItem)}
+          >
             Save
           </Button>
         </ModalFooter>

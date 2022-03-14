@@ -2,43 +2,41 @@ import { Modal } from "bootstrap";
 import React, { Component } from "react";
 import "./App.css";
 import CustomModal from "./Component/Modal";
-const tasks = [
-  {
-    id: 1,
-    title: "Dunning",
-    description: "Sending dunning letters to client for uncollected cash",
-    completed: false,
-  },
-  {
-    id: 2,
-    title: "other Release",
-    description: "check",
-    completed: true,
-  },
-  {
-    id: 3,
-    title: "Weekly Reports",
-    description: "Sending",
-    completed: false,
-  },
-];
+import axios from "axios";
+
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       viewCompleted: false,
-      taskList: tasks,
+      taskList: [],
       activeItem: null,
       isOpen: false,
       modal: false,
     };
   }
+  componentDidMount() {
+    this.refreshList();
+  }
+  refreshList = () => {
+    axios
+      .get("http://localhost:8000/api/tasks/")
+      .then((res) => this.setState({ taskList: res.data }))
+      .catch((err) => console.log(err));
 
+    this.setState({ isOpen: false, modal: false });
+  };
   toggle = () => {
     this.setState({ isOpen: !this.state.isOpen, modal: false });
   };
-  onSave = (obj) => {
-    alert("ok");
+  onSave = (activeItem, isNewItem) => {
+    if (isNewItem) {
+      axios.post("http://localhost:8000/api/tasks/", activeItem).then((res) => this.refreshList());
+    } else {
+      axios
+        .put(`http://localhost:8000/api/tasks/${activeItem.id}/`, activeItem)
+        .then((res) => this.refreshList());
+    }
   };
   displayCompleted = (status) => {
     if (status) {
@@ -65,8 +63,16 @@ class App extends Component {
     );
   };
   editItem = (activeItem) => {
-    this.setState({ isOpen: !this.state.isOpen, modal: true, activeItem: activeItem });
+    this.setState({ isOpen: true, modal: true, activeItem: activeItem });
   };
+  addItem = () => {
+    this.setState({
+      isOpen: true,
+      modal: true,
+      activeItem: { title: "", description: "", completed: false },
+    });
+  };
+
   //rendering item in the list compeleted or incompleted
   renderItems = () => {
     const { viewCompleted } = this.state;
@@ -99,7 +105,9 @@ class App extends Component {
         <div className="row">
           <div className="col-md-6 col-sm-10 mx-auto p-0">
             <div className="p-3">
-              <button className="btn btn-warning">Add task</button>
+              <button className="btn btn-warning" onClick={() => this.addItem()}>
+                Add task
+              </button>
             </div>
             {this.renderTabList()}
             <ul className="list-group list-group-flush">{this.renderItems()}</ul>
